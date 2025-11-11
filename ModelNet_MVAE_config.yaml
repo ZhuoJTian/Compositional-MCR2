@@ -1,0 +1,52 @@
+# @package _global_
+
+model:
+  z_dim: 64
+  sparse: false
+
+encoder:
+  default:
+    _target_: multiviewae.architectures.mlp.VariationalEncoder
+    hidden_layer_dim: [512, 512, 512]
+    bias: true
+    non_linear: true
+    enc_dist:
+      _target_: multiviewae.base.distributions.Normal
+
+decoder:
+  default:
+    _target_: multiviewae.architectures.mlp.VariationalDecoder
+    hidden_layer_dim: [512, 512, 512]
+    bias: true
+    non_linear: true
+    dec_dist:
+      _target_: multiviewae.base.distributions.Normal
+
+prior:
+  _target_: multiviewae.base.distributions.Normal
+  loc: 0.0         # 改成 float，而不是 int
+  scale: 1.0       # 同样必须是 float
+
+training:
+  batch_size: 128
+  max_epochs: 50
+  optimizer:
+    _target_: torch.optim.Adam
+    lr: 0.0001
+    weight_decay: 0.00001
+
+callbacks:
+  early_stopping:
+    _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: "val_loss"
+    mode: "min"
+    patience: 100
+    min_delta: 0.001
+    verbose: true
+
+logging:
+  out_dir: ./results/mvae_modelnet
+  checkpoint: true
+  save_model: true
+  monitor_metric: val_loss
+  monitor_mode: min
